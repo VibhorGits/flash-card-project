@@ -3,25 +3,18 @@ import pandas
 import random
 
 BACKGROUND_COLOR = "#B1DDC6"
+current_card = {}
+to_learn = {}
 
 # Accessing data
+try:
+    data = pandas.read_csv("data//words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("data//french_words.csv")
+    to_learn = original_data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
 
-data = pandas.read_csv("data//french_words.csv")
-to_learn = data.to_dict(orient="records")
-current_card = {}
-
-
-# def next_card():
-#     current_card = random.choice(to_learn)
-#     canvas.itemconfig(canvas_image, image=front_img)
-#     canvas.itemconfig(card_title, text="French")
-#     canvas.itemconfig(card_word, text=current_card["French"])
-#
-#     window.after(ms=3000)
-#
-#     canvas.itemconfig(canvas_image, image=back_img)
-#     canvas.itemconfig(card_title, text="English")
-#     canvas.itemconfig(card_word, text=current_card["English"])
 
 # Moving to next card word by pressing button
 def next_card():
@@ -33,11 +26,20 @@ def next_card():
     canvas.itemconfig(card_word, text=current_card["French"], fill="black")
     flip_timer = window.after(ms=3000, func=flip_card)
 
+
 # Flipping to the English Translation
 def flip_card():
     canvas.itemconfig(canvas_image, image=back_img)
     canvas.itemconfig(card_title, text="English", fill="white")
     canvas.itemconfig(card_word, text=current_card["English"], fill="white")
+
+
+# Creating new csv for the words left to learn
+def is_known():
+    to_learn.remove(current_card)
+    learn_data = pandas.DataFrame(to_learn)
+    learn_data.to_csv("data//words_to_learn.csv", index=False)
+    next_card()
 
 
 # User Interface
@@ -63,7 +65,7 @@ unknown_button = Button(image=cross_img, highlightthickness=0, command=next_card
 unknown_button.grid(row=1, column=0)
 
 check_img = PhotoImage(file="images//right.png")
-known_button = Button(image=check_img, highlightthickness=0, command=next_card)
+known_button = Button(image=check_img, highlightthickness=0, command=is_known)
 known_button.grid(row=1, column=1)
 
 next_card()
